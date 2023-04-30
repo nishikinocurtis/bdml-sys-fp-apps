@@ -84,7 +84,7 @@ func calcFib(w http.ResponseWriter, r *http.Request) {
 
 	span.SetAttributes(
 		attribute.String("test1", "ok"),
-		attribute.Int("request_n", reqN))
+		attribute.Int64("request_n", int64(reqN)))
 
 	res, err := Fibonacci(int64(reqN), ctx)
 	if err != nil {
@@ -92,9 +92,29 @@ func calcFib(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	span.SetAttributes(
+		attribute.Int64("final_result", res),
+		attribute.Bool("calc_success", true))
+
 	_, err = io.WriteString(w, strconv.FormatInt(res, 10))
 	if err != nil {
 		span.AddEvent("error writing response")
+		return
+	}
+}
+
+func refreshFilter(w http.ResponseWriter, r *http.Request) {
+	taf := otel.GetTraceAttributeFilter()
+	println("Start refreshing filter")
+	err := taf.HandleRequest(r)
+	if err != nil {
+		println("Error refreshing filter")
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+	println("Finish refreshing filter")
+	_, err = io.WriteString(w, "ok")
+	if err != nil {
 		return
 	}
 }
@@ -115,6 +135,7 @@ func main() {
 	otel.SetTextMapPropagator(p)
 
 	http.HandleFunc("/fib", calcFib)
+	http.HandleFunc("/otel", refreshFilter)
 
 	_ = http.ListenAndServe(":1233", nil)
 }
