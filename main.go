@@ -88,6 +88,9 @@ func calcFib(w http.ResponseWriter, r *http.Request) {
 
 	res, err := Fibonacci(int64(reqN), ctx)
 	if err != nil {
+		span.SetAttributes(
+			attribute.Int64("final_result", -1),
+			attribute.Bool("calc_success", false))
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
@@ -133,6 +136,11 @@ func main() {
 
 	p := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
 	otel.SetTextMapPropagator(p)
+
+	otel.SetAttributeFilterConfig(
+		otel.WithAttributeFilter(),
+		otel.WithStructuralTraceFilter(),
+		otel.WithStructuralTraceFilter())
 
 	http.HandleFunc("/fib", calcFib)
 	http.HandleFunc("/otel", refreshFilter)

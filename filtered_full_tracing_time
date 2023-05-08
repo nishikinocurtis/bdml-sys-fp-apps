@@ -1,0 +1,9 @@
+Single Process Single Thread:
+No Filtering:       22.62s user 18.18s system  96% cpu 42.382 total
+Filtered Out 93%:   21.17s user 17.08s system  96% cpu 39.716 total
+Filtered Out 0%:    22.88s user 18.00s system  95% cpu 42.696 total
+
+Multiprocessing - Parallel 3:
+No Filtering:       11.65s user 7.57s system  200% cpu  9.578 total
+Filtered Out 93%:    5.78s user 3.67s system  100% cpu  9.420 total
+Filtered Out 0%:     5.84s user 3.86s system  100% cpu  9.676 total
